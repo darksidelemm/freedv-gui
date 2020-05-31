@@ -22,7 +22,8 @@
 #include "wx/wx.h"
 #include "fdmdv2_main.h"
 
-extern float g_avmag[];                 // av mag spec passed in to draw() 
+extern float g_avmag[];                 // av mag spec passed in to draw()
+extern struct MODEM_STATS g_stats;
 void fdmdv2_clickTune(float frequency); // callback to pass new click freq
 
 BEGIN_EVENT_TABLE(PlotWaterfall, PlotPanel)
@@ -303,6 +304,18 @@ void PlotWaterfall::drawGraticule(wxAutoBufferedPaintDC& dc)
     //printf("m_rxFreq %f x %d\n", m_rxFreq, x);
     dc.DrawLine(x, m_rGrid.GetHeight()+ PLOT_BORDER, x, m_rCtrl.GetHeight());
     
+    // Draw frequency estimator outputs, if they are valid (e.g. > 0).
+    // This may need to be re-visited if FreeDV ever accepts complex input.
+    int i;
+    for(i=0; i<MODEM_STATS_MAX_F_EST; i++) {
+        if (g_stats.f_est[i] > 0.0){
+            dc.SetPen(wxPen(GREY_COLOR, 2));
+            x = g_stats.f_est[i]*freq_hz_to_px;
+            x += PLOT_BORDER + XLEFT_OFFSET;
+            dc.DrawLine(x, m_rGrid.GetHeight()+ PLOT_BORDER, x, m_rCtrl.GetHeight());
+        }
+    }
+
 }
 
 //-------------------------------------------------------------------------
